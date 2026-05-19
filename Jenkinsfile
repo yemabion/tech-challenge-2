@@ -13,9 +13,9 @@ pipeline {
 
         ECS_CLUSTER       = "${PROJECT_NAME}-cluster"
 
-        AWS_ACCOUNT_ID    = 'YOUR_AWS_ACCOUNT_ID'
+        AWS_ACCOUNT_ID    = '496411573862'
 
-        ECR_REGISTRY      = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        ECR_REGISTRY      = "${496411573862}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
         FRONTEND_IMAGE    = "${ECR_REGISTRY}/${FRONTEND_REPO}"
         BACKEND_IMAGE     = "${ECR_REGISTRY}/${BACKEND_REPO}"
