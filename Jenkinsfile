@@ -3,6 +3,8 @@ pipeline {
 
     options {
         timestamps()
+        disableConcurrentBuilds()
+        timeout(time: 45, unit: 'MINUTES')
     }
 
     environment {
@@ -33,10 +35,12 @@ pipeline {
 
         stage('Login to ECR') {
             steps {
-                sh '''
-                    set -e
-                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-                '''
+                retry(2) {
+                    sh '''
+                        set -e
+                        aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+                    '''
+                }
             }
         }
 
@@ -45,7 +49,7 @@ pipeline {
                 dir('frontend') {
                     sh '''
                         set -e
-                        docker build -t $FRONTEND_IMAGE:latest -t $FRONTEND_IMAGE:$IMAGE_TAG .
+                        docker build --pull -t "$FRONTEND_IMAGE:latest" -t "$FRONTEND_IMAGE:$IMAGE_TAG" .
                     '''
                 }
             }
@@ -56,7 +60,7 @@ pipeline {
                 dir('backend') {
                     sh '''
                         set -e
-                        docker build -t $BACKEND_IMAGE:latest -t $BACKEND_IMAGE:$IMAGE_TAG .
+                        docker build --pull -t "$BACKEND_IMAGE:latest" -t "$BACKEND_IMAGE:$IMAGE_TAG" .
                     '''
                 }
             }
@@ -66,10 +70,10 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    docker push $FRONTEND_IMAGE:latest
-                    docker push $FRONTEND_IMAGE:$IMAGE_TAG
-                    docker push $BACKEND_IMAGE:latest
-                    docker push $BACKEND_IMAGE:$IMAGE_TAG
+                    docker push "$FRONTEND_IMAGE:latest"
+                    docker push "$FRONTEND_IMAGE:$IMAGE_TAG"
+                    docker push "$BACKEND_IMAGE:latest"
+                    docker push "$BACKEND_IMAGE:$IMAGE_TAG"
                 '''
             }
         }
@@ -79,10 +83,10 @@ pipeline {
                 sh '''
                     set -e
                     aws ecs update-service \
-                        --cluster $ECS_CLUSTER \
-                        --service $FRONTEND_SERVICE \
+                        --cluster "$ECS_CLUSTER" \
+                        --service "$FRONTEND_SERVICE" \
                         --force-new-deployment \
-                        --region $AWS_REGION
+                        --region "$AWS_REGION"
                 '''
             }
         }
@@ -92,10 +96,10 @@ pipeline {
                 sh '''
                     set -e
                     aws ecs update-service \
-                        --cluster $ECS_CLUSTER \
-                        --service $BACKEND_SERVICE \
+                        --cluster "$ECS_CLUSTER" \
+                        --service "$BACKEND_SERVICE" \
                         --force-new-deployment \
-                        --region $AWS_REGION
+                        --region "$AWS_REGION"
                 '''
             }
         }
@@ -105,9 +109,9 @@ pipeline {
                 sh '''
                     set -e
                     aws ecs wait services-stable \
-                        --cluster $ECS_CLUSTER \
-                        --services $FRONTEND_SERVICE $BACKEND_SERVICE \
-                        --region $AWS_REGION
+                        --cluster "$ECS_CLUSTER" \
+                        --services "$FRONTEND_SERVICE" "$BACKEND_SERVICE" \
+                        --region "$AWS_REGION"
                 '''
             }
         }
