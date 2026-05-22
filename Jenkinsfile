@@ -6,22 +6,22 @@ pipeline {
     }
 
     environment {
-        AWS_REGION      = 'us-east-1'
-        PROJECT_NAME    = 'techchallenge2'
-        AWS_ACCOUNT_ID  = '496411573862'
+        AWS_REGION       = 'us-east-1'
+        PROJECT_NAME     = 'techchallenge2'
+        AWS_ACCOUNT_ID   = '496411573862'
 
-        FRONTEND_REPO   = "${PROJECT_NAME}-frontend"
-        BACKEND_REPO    = "${PROJECT_NAME}-backend"
+        FRONTEND_REPO    = "${PROJECT_NAME}-frontend"
+        BACKEND_REPO     = "${PROJECT_NAME}-backend"
 
         FRONTEND_SERVICE = "${PROJECT_NAME}-frontend-svc"
         BACKEND_SERVICE  = "${PROJECT_NAME}-backend-svc"
         ECS_CLUSTER      = "${PROJECT_NAME}-cluster"
 
-        ECR_REGISTRY    = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-        FRONTEND_IMAGE  = "${ECR_REGISTRY}/${FRONTEND_REPO}"
-        BACKEND_IMAGE   = "${ECR_REGISTRY}/${BACKEND_REPO}"
+        ECR_REGISTRY     = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        FRONTEND_IMAGE   = "${ECR_REGISTRY}/${FRONTEND_REPO}"
+        BACKEND_IMAGE    = "${ECR_REGISTRY}/${BACKEND_REPO}"
 
-        IMAGE_TAG       = "${BUILD_NUMBER}"
+        IMAGE_TAG        = "${BUILD_NUMBER}"
     }
 
     stages {
@@ -34,9 +34,8 @@ pipeline {
         stage('Login to ECR') {
             steps {
                 sh '''
-                set -e
-                    aws ecr get-login-password --region ${AWS_REGION} | \
-                    docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                    set -e
+                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
                 '''
             }
         }
